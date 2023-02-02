@@ -1,29 +1,33 @@
+import { PropsWithChildren, useState } from "react";
 import styled from "styled-components";
+import ContainerWrapper from "./component/ContainerWrapper";
+import DragItem from "./component/DragButton";
+import ItemWrapper from "./component/ItemWrapper";
 
 const size = 100;
-const Wrapper = styled.div`
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
-  overflow-y: scroll;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, ${size}px);
-  grid-gap: 10px;
-  grid-auto-flow: dense;
-`;
 
-const Item = styled.div<{
-  width: number;
-  height: number;
-}>`
+const MyItem = styled(ItemWrapper)`
   background-color: blueviolet;
-  line-height: ${(p) => p.height * size}px;
-  ${(p) => (p.width > 1 ? "grid-column-end: span " + p.width + ";" : "") + (p.height > 1 ? "grid-row-end: span " + p.height + ";" : "")}
   color: white;
   font-family: system-ui;
   font-weight: 900;
   font-size: 1rem;
   text-align: center;
+  user-select: none;
+  border: 3px solid #6800ca;
+`;
+
+const DragButton = styled(DragItem)`
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  height: 20px;
+  transform: translateX(-50%);
+  background-color: #00a2ff;
+  line-height: 20px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 12px;
 `;
 
 const sizes = [
@@ -31,15 +35,36 @@ const sizes = [
   [2, 2],
   [4, 2],
 ];
+function Item({ children, id }: PropsWithChildren<{ id: string }>) {
+  const [sizeIndex, setSizeIndex] = useState(Math.floor(Math.random() * sizes.length));
+  const [width, height] = sizes[sizeIndex];
+  // const width = Math.ceil(Math.random() * 3);
+  // const height = Math.ceil(Math.random() * 5);
+  // const [width, height] = sizes[Math.floor(Math.random() * sizes.length)];
+  return (
+    <MyItem
+      id={id}
+      colSpan={width}
+      rowSpan={height}
+      onClick={() => setSizeIndex((v) => ++v % sizes.length)}
+      style={{
+        lineHeight: height * size + "px",
+      }}
+    >
+      {children}
+    </MyItem>
+  );
+}
+
 export default function Masonry() {
   return (
-    <Wrapper>
-      {new Array(20).fill("test").map((item, i) => {
-        // const width = Math.ceil(Math.random() * 3);
-        // const height = Math.ceil(Math.random() * 3);
-        const [width, height] = sizes[Math.floor(Math.random() * sizes.length)];
-        return <Item key={i} width={width} height={height}>{`${i}(${width},${height})`}</Item>;
-      })}
-    </Wrapper>
+    <ContainerWrapper gap={10} columnWidth={size} rowHeight={size}>
+      {new Array(100).fill("test").map((item, i) => (
+        <Item key={i} id={i + ""}>
+          <DragButton>Drag</DragButton>
+          {i}
+        </Item>
+      ))}
+    </ContainerWrapper>
   );
 }
