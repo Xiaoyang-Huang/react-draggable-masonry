@@ -21,6 +21,10 @@ export default function DragItem({ children, ...rest }: PropsWithChildren & HTML
       stopPropagation(e);
       // console.log(e.pageX, startX, e.pageY, startY);
       targetTile.move(e.movementX, e.movementY);
+      const touchedTileId = targetTile.testTile(e.pageX, e.pageY);
+      if (touchedTileId) {
+        targetTile.switchTile(targetTile.id, touchedTileId);
+      }
     };
   }, []);
 
