@@ -1,6 +1,6 @@
-import { Children, PropsWithChildren, useMemo, useEffect, useRef, useCallback, useState } from "react";
+import { Children, PropsWithChildren, useEffect, useRef, useCallback, useState } from "react";
 import styled from "styled-components";
-import TileManagerContext, { createDefaultTileManagerContext } from "../context/TileManagerContext";
+import TileManagerContext, { useDefaultTileManagerContext } from "../context/TileManagerContext";
 import debounce from "../helper/debounce";
 
 const Wrapper = styled.div`
@@ -13,7 +13,7 @@ export default function ContainerWrapper({ columnWidth, rowHeight, gap, children
   const wrapper = useRef<HTMLDivElement>();
   // const [tiles, setTiles] = useState<{ [key: string]: Tile }>({});
   const [childrenArray, setChildrenArray] = useState(Children.toArray(children));
-  const initialContext = useMemo(() => createDefaultTileManagerContext(), []);
+  const initialContext = useDefaultTileManagerContext();
 
   const handleGridChange = useCallback(() => {
     if (initialContext.tilesOrder) {

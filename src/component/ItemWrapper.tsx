@@ -2,6 +2,7 @@ import { PropsWithChildren, useRef, useCallback, useEffect, useContext, HTMLAttr
 import styled from "styled-components";
 import TileContext from "../context/TileContext";
 import TileManagerContext from "../context/TileManagerContext";
+import debounce from "../helper/debounce";
 
 const Container = styled.div`
   position: absolute;
@@ -121,7 +122,7 @@ export default function ItemWrapper({ id, children, colSpan = 1, rowSpan = 1, ..
       id,
       move,
       testTile,
-      switchTile: switchOrder,
+      switchTile: (...args) => debounce(100, switchOrder, ...args),
       startDrag,
       endDrag,
     }),

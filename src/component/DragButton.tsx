@@ -23,6 +23,7 @@ export default function DragItem({ children, ...rest }: PropsWithChildren & HTML
       targetTile.move(e.movementX, e.movementY);
       const touchedTileId = targetTile.testTile(e.pageX, e.pageY);
       if (touchedTileId) {
+        console.log("switch", targetTile.id, touchedTileId);
         targetTile.switchTile(targetTile.id, touchedTileId);
       }
     };
@@ -34,7 +35,8 @@ export default function DragItem({ children, ...rest }: PropsWithChildren & HTML
       dragAgent.startDrag();
       const moveHandler = handlePointerMove(dragAgent);
       window.addEventListener("pointermove", moveHandler);
-      window.addEventListener("pointerup", () => {
+      window.addEventListener("pointerup", (e) => {
+        stopPropagation(e);
         dragAgent.endDrag();
         window.removeEventListener("pointermove", moveHandler);
       });
