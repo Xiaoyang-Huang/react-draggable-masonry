@@ -7,7 +7,7 @@ const Wrapper = styled.div`
   user-select: none;
   cursor: all-scroll;
 `;
-export default function DragItem({ children, ...rest }: PropsWithChildren & HTMLAttributes<HTMLDivElement>) {
+export default function DragButton({ children, ...rest }: PropsWithChildren & HTMLAttributes<HTMLDivElement>) {
   const dragAgent = useContext(TileContext);
 
   const stopPropagation = (e: ReactPointEvent<HTMLDivElement> | PointerEvent) => {
@@ -22,9 +22,9 @@ export default function DragItem({ children, ...rest }: PropsWithChildren & HTML
       // console.log(e.pageX, startX, e.pageY, startY);
       targetTile.move(e.movementX, e.movementY);
       const touchedTileId = targetTile.testTile(e.pageX, e.pageY);
-      if (touchedTileId) {
-        console.log("switch", targetTile.id, touchedTileId);
-        targetTile.switchTile(targetTile.id, touchedTileId);
+      if (touchedTileId !== undefined) {
+        console.log("switch", targetTile.tileId, touchedTileId);
+        targetTile.switchTile(targetTile.tileId, touchedTileId);
       }
     };
   }, []);
@@ -35,9 +35,9 @@ export default function DragItem({ children, ...rest }: PropsWithChildren & HTML
       dragAgent.startDrag();
       const moveHandler = handlePointerMove(dragAgent);
       window.addEventListener("pointermove", moveHandler);
-      window.addEventListener("pointerup", (e) => {
+      window.addEventListener("pointerup", function endHandler(e) {
         stopPropagation(e);
-        dragAgent.endDrag();
+        dragAgent.endDrag(endHandler);
         window.removeEventListener("pointermove", moveHandler);
       });
     },

@@ -1,41 +1,21 @@
-import { createContext, useState } from "react";
+import { createContext, RefObject } from "react";
+import { MasonryRef } from "../component/ContainerWrapper";
 import { Tile } from "../component/ItemWrapper";
 
-export function useDefaultTileManagerContext() {
+export function createDefaultTileManagerContext(containerRef: RefObject<MasonryRef>) {
   const tiles: { [key: string]: Tile } = {};
-  const [tilesOrder, setTilesOrder] = useState<Array<string>>([]);
   const store = {
     tiles,
-    tilesOrder,
+    containerRef,
     addTile: (item: Tile) => {
-      const id = item.id;
-      tiles[id] = item;
-      setTilesOrder((tilesOrder) => {
-        if (!tilesOrder.includes(id)) {
-          tilesOrder.push(id);
-          return [...tilesOrder];
-        }
-        return tilesOrder;
-      });
-    },
-    switchOrder: (idA: string, idB: string) => {
-      setTilesOrder((tilesOrder) => {
-        const tileAIndex = tilesOrder.indexOf(idA);
-        const tileBIndex = tilesOrder.indexOf(idB);
-        tilesOrder[tileAIndex] = idB;
-        tilesOrder[tileBIndex] = idA;
-        return [...tilesOrder];
-      });
+      tiles[item.tileId] = item;
     },
   };
 
-  // test code
-  (window as any).xyStore = store;
   return store;
 }
-export default createContext<ReturnType<typeof useDefaultTileManagerContext>>({
+export default createContext<ReturnType<typeof createDefaultTileManagerContext>>({
   tiles: {},
-  tilesOrder: [],
   addTile: () => void 0,
-  switchOrder: () => void 0,
+  containerRef: {} as any,
 });

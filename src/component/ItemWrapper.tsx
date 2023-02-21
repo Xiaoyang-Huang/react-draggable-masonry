@@ -26,24 +26,28 @@ const Wrapper = styled.div`
   }
 `;
 
+export type TileId = number | string;
 export type Tile = {
-  id: string;
+  tileId: TileId;
   isMe: (testElem: Element) => boolean;
   updateBounding: () => void;
 };
 
+export type TileProps = { tileId: TileId; colSpan?: number; rowSpan?: number; onGridChange?: (id: TileId) => void; onInit?: (id: TileId) => void };
+
 export type DragAgent = {
-  id: string;
+  tileId: TileId;
   move: (moveX: number, moveY: number) => void;
-  testTile: (x: number, y: number) => string | undefined | void;
-  switchTile: (idA: string, idB: string) => void;
+  testTile: (x: number, y: number) => TileId | undefined | void;
+  switchTile: (idA: TileId, idB: TileId) => void;
   startDrag: () => void;
-  endDrag: () => void;
+  endDrag: (endHandle: Function) => void;
 };
 
-export default function ItemWrapper({ id, children, colSpan = 1, rowSpan = 1, ...rest }: PropsWithChildren<{ id: string; colSpan?: number; rowSpan?: number; onGridChange?: (id: string) => void }> & HTMLAttributes<HTMLDivElement>) {
+export default function ItemWrapper({ tileId, children, colSpan = 1, rowSpan = 1, onInit, ...rest }: PropsWithChildren<TileProps> & HTMLAttributes<HTMLDivElement>) {
+  console.log(`item ${tileId} is re-render`);
   const [inDrag, setInDrag] = useState(false);
-  const { tiles, switchOrder, addTile } = useContext(TileManagerContext);
+  const { tiles, addTile, containerRef } = useContext(TileManagerContext);
   const wrapper = useRef<HTMLDivElement>();
   const container = useRef<HTMLDivElement>();
 
@@ -54,11 +58,34 @@ export default function ItemWrapper({ id, children, colSpan = 1, rowSpan = 1, ..
     const offsetRect = (wrapper.current.parentNode as HTMLElement)?.getBoundingClientRect();
     if (!offsetRect) return;
     const rect = wrapper.current.getBoundingClientRect();
-    container.current.style.left = rect.left - offsetRect.left + "px";
-    container.current.style.top = rect.top - offsetRect.top + "px";
+    if (!inDrag) {
+      container.current.style.left = rect.left - offsetRect.left + "px";
+      container.current.style.top = rect.top - offsetRect.top + "px";
+    }
     container.current.style.height = rect.height + "px";
     container.current.style.width = rect.width + "px";
+  }, [inDrag]);
+
+  const startDrag = useCallback(() => {
+    if (!wrapper.current || !container.current) return;
+    container.current.style.transition = "left 0ms, top 0ms";
+    setInDrag(true);
   }, []);
+
+  const endDrag = useCallback(
+    (endHandler: Function) => {
+      if (!wrapper.current || !container.current) return;
+      container.current.style.removeProperty("transition");
+      const handleTransitionEnd = () => {
+        setInDrag(false);
+        container.current?.removeEventListener("transitionend", handleTransitionEnd);
+      };
+      container.current.addEventListener("transitionend", handleTransitionEnd);
+      updateBounding();
+      window.removeEventListener("pointerup", endHandler as any);
+    },
+    [updateBounding]
+  );
 
   const move = useCallback((moveX: number, moveY: number) => {
     if (!wrapper.current || !container.current) return;
@@ -82,28 +109,15 @@ export default function ItemWrapper({ id, children, colSpan = 1, rowSpan = 1, ..
       const elements = document.elementsFromPoint(mouseX, mouseY);
       const target = elements.find((elem) => ~elem.className.indexOf(targetStyledId) && elem !== wrapper.current);
       if (target) {
-        return Object.values(tiles).find((item) => item.isMe(target))?.id;
+        return Object.values(tiles).find((item) => item.isMe(target))?.tileId;
       }
     },
     [tiles]
   );
 
-  const startDrag = useCallback(() => {
-    if (!wrapper.current || !container.current) return;
-    container.current.style.transition = "left 0ms, top 0ms";
-    setInDrag(true);
-  }, []);
-
-  const endDrag = useCallback(() => {
-    if (!wrapper.current || !container.current) return;
-    container.current.style.removeProperty("transition");
-    const handleTransitionEnd = () => {
-      setInDrag(false);
-      container.current?.removeEventListener("transitionend", handleTransitionEnd);
-    };
-    container.current.addEventListener("transitionend", handleTransitionEnd);
-    updateBounding();
-  }, [updateBounding]);
+  useEffect(() => {
+    onInit?.(tileId);
+  }, [onInit, tileId]);
 
   useEffect(() => {
     Object.values(tiles).forEach((item) => item.updateBounding());
@@ -111,23 +125,24 @@ export default function ItemWrapper({ id, children, colSpan = 1, rowSpan = 1, ..
 
   useEffect(() => {
     addTile({
-      id,
+      tileId,
       updateBounding,
       isMe,
     });
-  }, [id, isMe, updateBounding, addTile]);
+  }, [tileId, isMe, updateBounding, addTile]);
 
-  const dragAgent: DragAgent = useMemo(
-    () => ({
-      id,
+  const dragAgent: DragAgent = useMemo(() => {
+    return {
+      tileId,
       move,
       testTile,
-      switchTile: (...args) => debounce(100, switchOrder, ...args),
+      switchTile: (idA: TileId, idB: TileId) => {
+        containerRef?.current?.switchOrder(idA, idB);
+      },
       startDrag,
       endDrag,
-    }),
-    [id, move, testTile, startDrag, endDrag]
-  );
+    };
+  }, [tileId, move, testTile, startDrag, endDrag, containerRef]);
 
   return (
     <Wrapper ref={(n) => n && (wrapper.current = n)} className={inDrag ? "placeholder" : ""} style={{ gridColumnEnd: colSpan > 1 ? "span " + colSpan : "auto", gridRowEnd: rowSpan > 1 ? "span " + rowSpan : "auto", ...rest.style }}>

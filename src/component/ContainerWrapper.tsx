@@ -1,7 +1,8 @@
-import { Children, PropsWithChildren, useEffect, useRef, useCallback, useState } from "react";
+import { Children, PropsWithChildren, useEffect, useRef, useCallback, useState, useMemo, forwardRef, useImperativeHandle, ReactElement, RefObject } from "react";
 import styled from "styled-components";
-import TileManagerContext, { useDefaultTileManagerContext } from "../context/TileManagerContext";
+import TileManagerContext, { createDefaultTileManagerContext } from "../context/TileManagerContext";
 import debounce from "../helper/debounce";
+import { TileId, TileProps } from "./ItemWrapper";
 
 const Wrapper = styled.div`
   position: relative;
@@ -9,28 +10,48 @@ const Wrapper = styled.div`
   grid-auto-flow: dense;
 `;
 
-export default function ContainerWrapper({ columnWidth, rowHeight, gap, children }: PropsWithChildren<{ columnWidth?: number | string; rowHeight?: number | string; gap?: number | string }>) {
+type Props = PropsWithChildren<{ columnWidth?: number; rowHeight?: number; gap?: number }>;
+export type MasonryRef = {
+  switchOrder: (origin: TileId, target: TileId) => void;
+};
+
+const debounceTime = 100;
+const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight, gap, children }, ref) => {
+  console.log("Container re-render");
   const wrapper = useRef<HTMLDivElement>();
-  // const [tiles, setTiles] = useState<{ [key: string]: Tile }>({});
-  const [childrenArray, setChildrenArray] = useState(Children.toArray(children));
-  const initialContext = useDefaultTileManagerContext();
+  const childrenArray = Children.toArray(children) as Array<ReactElement<TileProps>>;
+  const [tilesOrder, setTilesOrder] = useState<Array<TileId>>(childrenArray.map(({ props }) => props.tileId));
+  const initialContext = useMemo(() => createDefaultTileManagerContext(ref as RefObject<MasonryRef>), [ref]);
 
   const handleGridChange = useCallback(() => {
-    if (initialContext.tilesOrder) {
-      console.log(initialContext.tilesOrder);
-      setChildrenArray((childrenArray) => childrenArray.sort((itemA: any, itemB: any) => initialContext.tilesOrder.indexOf(itemA.props.id) - initialContext.tilesOrder.indexOf(itemB.props.id)));
-    }
     Object.values(initialContext.tiles).forEach((item) => item.updateBounding());
   }, [initialContext]);
 
   useEffect(() => {
     if (!wrapper.current) return;
-    const resizeObserver = new ResizeObserver(() => debounce(100, handleGridChange));
+    const resizeObserver = new ResizeObserver(() => debounce(debounceTime, handleGridChange));
     resizeObserver.observe(wrapper.current);
     return () => {
       resizeObserver.disconnect();
     };
-  }, [handleGridChange]);
+  }, [handleGridChange, tilesOrder]);
+
+  useImperativeHandle(
+    ref,
+    () => {
+      return {
+        switchOrder: (a, b) => {
+          const aIndex = tilesOrder.indexOf(a);
+          const bIndex = tilesOrder.indexOf(b);
+          const temp = tilesOrder[aIndex];
+          tilesOrder[aIndex] = tilesOrder[bIndex];
+          tilesOrder[bIndex] = temp;
+          setTilesOrder([...tilesOrder]);
+        },
+      };
+    },
+    [tilesOrder]
+  );
 
   return (
     <Wrapper
@@ -41,7 +62,9 @@ export default function ContainerWrapper({ columnWidth, rowHeight, gap, children
         gridGap: gap !== undefined ? gap + (typeof gap === "number" ? "px" : "") : gap,
       }}
     >
-      <TileManagerContext.Provider value={initialContext}>{childrenArray}</TileManagerContext.Provider>
+      <TileManagerContext.Provider value={initialContext}>{childrenArray.sort(({ props: propsA }, { props: propsB }) => tilesOrder.indexOf(propsA.tileId) - tilesOrder.indexOf(propsB.tileId))}</TileManagerContext.Provider>
     </Wrapper>
   );
-}
+});
+
+export default ContainerWrapper;
