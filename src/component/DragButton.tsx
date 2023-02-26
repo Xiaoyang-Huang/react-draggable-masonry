@@ -85,7 +85,7 @@ export default function DragButton({ children, ...rest }: PropsWithChildren & HT
       move(e.movementX, e.movementY);
       const touchedTileId = testTile(e.pageX, e.pageY);
       if (touchedTileId !== undefined) {
-        console.log("switch", tileId, touchedTileId);
+        // console.log("switch", tileId, touchedTileId);
         containerRef?.current?.switchOrder(tileId, touchedTileId);
       }
     };

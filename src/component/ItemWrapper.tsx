@@ -34,7 +34,7 @@ export type Tile = {
 export type TileProps = { tileId: TileId; colSpan?: number; rowSpan?: number; onGridChange?: (id: TileId) => void };
 
 export default function ItemWrapper({ tileId, children, colSpan = 1, rowSpan = 1, ...rest }: PropsWithChildren<TileProps> & HTMLAttributes<HTMLDivElement>) {
-  console.log(`item ${tileId} is re-render`);
+  // console.log(`item ${tileId} is re-render`);
   const [inDrag, setInDrag] = useState(false);
   const { tiles, addTile, containerRef } = useContext(TileManagerContext);
   const boxRef = useRef<HTMLDivElement>();

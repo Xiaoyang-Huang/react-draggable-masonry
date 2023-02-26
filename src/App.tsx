@@ -6,6 +6,17 @@ import ItemWrapper, { TileId } from "./component/ItemWrapper";
 
 const size = 100;
 
+const FixItem = styled.div`
+  background-color: blueviolet;
+  color: white;
+  font-family: system-ui;
+  font-weight: 900;
+  font-size: 1rem;
+  text-align: center;
+  user-select: none;
+  border: 3px solid #6800ca;
+`;
+
 const MyItem = styled(ItemWrapper)`
   transition: all 300ms;
   background-color: blueviolet;
@@ -71,7 +82,7 @@ export default function Masonry() {
 
   useEffect(() => {
     if (!masonryRef.current) return;
-    masonryRef.current.setOrder([8, 2, 3, 4, 6]);
+    masonryRef.current.setOrder([8, "fixed-.$1", "fixed-.$3", "fixed-.$3", 4, 6]);
     const randomSwitch = (e: KeyboardEvent) => {
       if (e.key === "s") {
         const arr = new Array(tilesTotal).fill("test").map((item, index) => index);
@@ -93,12 +104,16 @@ export default function Masonry() {
         <button>123</button>
       </ButtonGroup>
       <ContainerWrapper ref={masonryRef} gap={10} columnWidth={size} rowHeight={size} onOrderChange={(v) => console.log(v)}>
-        {new Array(tilesTotal).fill("test").map((item, i) => (
-          <Item key={i} tileId={i}>
-            <DragButton>Drag</DragButton>
-            {i}
-          </Item>
-        ))}
+        {new Array(tilesTotal).fill("test").map((item, i) =>
+          i % 2 === 0 ? (
+            <Item key={i} tileId={i}>
+              <DragButton>Drag</DragButton>
+              {i}
+            </Item>
+          ) : (
+            <FixItem key={i}>{i}</FixItem>
+          )
+        )}
       </ContainerWrapper>
     </div>
   );

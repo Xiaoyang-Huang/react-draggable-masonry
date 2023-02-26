@@ -20,10 +20,9 @@ export type MasonryRef = {
 
 const debounceTime = 50;
 const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight, gap, children, onOrderChange }, ref) => {
-  console.log("Container re-render");
   const wrapper = useRef<HTMLDivElement>();
   const childrenArray = Children.toArray(children) as Array<ReactElement<TileProps>>;
-  const [tilesOrder, setTilesOrder] = useState<Array<TileId>>(childrenArray.map(({ props }) => props.tileId));
+  const [tilesOrder, setTilesOrder] = useState<Array<TileId>>(childrenArray.map(({ props, key }) => props.tileId ?? "fixed-" + key));
   const initialContext = useMemo(() => createDefaultTileManagerContext(ref as RefObject<MasonryRef>), [ref]);
 
   const handleGridChange = useCallback(() => {
@@ -31,9 +30,9 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
   }, [initialContext]);
 
   const sortFn = useCallback(
-    ({ props: propsA }: ReactElement<TileProps>, { props: propsB }: ReactElement<TileProps>) => {
-      const indexA = tilesOrder.indexOf(propsA.tileId);
-      const indexB = tilesOrder.indexOf(propsB.tileId);
+    ({ props: propsA, key: keyA }: ReactElement<TileProps>, { props: propsB, key: keyB }: ReactElement<TileProps>) => {
+      const indexA = tilesOrder.indexOf(propsA.tileId ?? "fixed-" + keyA);
+      const indexB = tilesOrder.indexOf(propsB.tileId ?? "fixed-" + keyB);
       if (indexA === -1 || indexB === -1) return indexA >= 0 ? -1 : 1;
       return indexA - indexB;
     },
@@ -58,19 +57,38 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
           const bIndex = tilesOrder.indexOf(b);
           [tilesOrder[aIndex], tilesOrder[bIndex]] = [tilesOrder[bIndex], tilesOrder[aIndex]];
           setTilesOrder([...tilesOrder]);
-          onOrderChange?.(tilesOrder);
         },
         tiles: initialContext.tiles,
         boxes: initialContext.boxes,
         setOrder: (order: Array<TileId>) =>
           setTilesOrder((v) => {
-            const notInOrder = v.filter((id) => !order.includes(id));
-            return [...order, ...notInOrder];
+            const targetOrder = order.filter((item, index) => order.indexOf(item) === index);
+            if (targetOrder.length !== order.length)
+              console.warn(
+                "detected duplicate items in order, will only keep first index for these items",
+                order.filter((item, index) => order.indexOf(item) !== index)
+              );
+            const notInOrder = v.filter((id) => !targetOrder.includes(id));
+            const idExisting = targetOrder.filter((id) => v.includes(id));
+            if (idExisting.length !== targetOrder.length)
+              console.warn(
+                "detected tile id is not in children list",
+                targetOrder.filter((id) => !v.includes(id))
+              );
+            const result = [...idExisting, ...notInOrder];
+            if (result.find((item, index) => v[index] !== item)) {
+              return result;
+            }
+            return v;
           }),
       };
     },
     [tilesOrder, initialContext, onOrderChange]
   );
+
+  useEffect(() => {
+    onOrderChange?.(tilesOrder);
+  }, [tilesOrder, onOrderChange]);
 
   useEffect(handleGridChange, [handleGridChange, tilesOrder]);
 
