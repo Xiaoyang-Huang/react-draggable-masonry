@@ -7,6 +7,7 @@ import ItemWrapper, { TileId } from "./component/ItemWrapper";
 const size = 100;
 
 const MyItem = styled(ItemWrapper)`
+  transition: all 300ms;
   background-color: blueviolet;
   color: white;
   font-family: system-ui;
@@ -70,6 +71,7 @@ export default function Masonry() {
 
   useEffect(() => {
     if (!masonryRef.current) return;
+    masonryRef.current.setOrder([8, 2, 3, 4, 6]);
     const randomSwitch = (e: KeyboardEvent) => {
       if (e.key === "s") {
         const arr = new Array(tilesTotal).fill("test").map((item, index) => index);
@@ -90,7 +92,7 @@ export default function Masonry() {
       <ButtonGroup>
         <button>123</button>
       </ButtonGroup>
-      <ContainerWrapper ref={masonryRef} gap={10} columnWidth={size} rowHeight={size}>
+      <ContainerWrapper ref={masonryRef} gap={10} columnWidth={size} rowHeight={size} onOrderChange={(v) => console.log(v)}>
         {new Array(tilesTotal).fill("test").map((item, i) => (
           <Item key={i} tileId={i}>
             <DragButton>Drag</DragButton>

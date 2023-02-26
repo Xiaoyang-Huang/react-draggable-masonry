@@ -1,11 +1,20 @@
-import { createContext } from "react";
-import { DragAgent, TileId } from "../component/ItemWrapper";
+import { createContext, RefObject } from "react";
+import { MasonryRef } from "../component/ContainerWrapper";
+import { TileId } from "../component/ItemWrapper";
 
-export default createContext<DragAgent>({
+export type TileAgent = {
+  tileId: TileId;
+  containerRef: RefObject<MasonryRef>;
+  boxRef: RefObject<HTMLDivElement>;
+  wrapperRef: RefObject<HTMLDivElement>;
+  setDragState: (inDrag: boolean) => void;
+  updateBounding: () => void;
+};
+export default createContext<TileAgent>({
   tileId: "mock",
-  testTile: (x: number, y: number) => void 0,
-  move: (x: number, y: number) => void 0,
-  switchTile: (idA: TileId, idBstring: TileId) => void 0,
-  startDrag: () => void 0,
-  endDrag: () => void 0,
+  containerRef: {} as any,
+  boxRef: {} as any,
+  wrapperRef: {} as any,
+  setDragState: () => void 0,
+  updateBounding: () => void 0,
 });

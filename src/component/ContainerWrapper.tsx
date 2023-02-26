@@ -2,7 +2,7 @@ import { Children, PropsWithChildren, useEffect, useRef, useCallback, useState, 
 import styled from "styled-components";
 import TileManagerContext, { createDefaultTileManagerContext } from "../context/TileManagerContext";
 import debounce from "../helper/debounce";
-import { TileId, TileProps } from "./ItemWrapper";
+import { Tile, TileId, TileProps } from "./ItemWrapper";
 
 const Wrapper = styled.div`
   position: relative;
@@ -10,13 +10,16 @@ const Wrapper = styled.div`
   grid-auto-flow: dense;
 `;
 
-type Props = PropsWithChildren<{ columnWidth?: number; rowHeight?: number; gap?: number }>;
+type Props = PropsWithChildren<{ columnWidth?: number; rowHeight?: number; gap?: number; onOrderChange?: (order: Array<TileId>) => void }>;
 export type MasonryRef = {
   switchOrder: (origin: TileId, target: TileId) => void;
+  setOrder: (order: Array<TileId>) => void;
+  tiles: { [key: string]: Tile };
+  boxes: { [key: string]: HTMLDivElement };
 };
 
-const debounceTime = 100;
-const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight, gap, children }, ref) => {
+const debounceTime = 50;
+const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight, gap, children, onOrderChange }, ref) => {
   console.log("Container re-render");
   const wrapper = useRef<HTMLDivElement>();
   const childrenArray = Children.toArray(children) as Array<ReactElement<TileProps>>;
@@ -27,6 +30,16 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
     Object.values(initialContext.tiles).forEach((item) => item.updateBounding());
   }, [initialContext]);
 
+  const sortFn = useCallback(
+    ({ props: propsA }: ReactElement<TileProps>, { props: propsB }: ReactElement<TileProps>) => {
+      const indexA = tilesOrder.indexOf(propsA.tileId);
+      const indexB = tilesOrder.indexOf(propsB.tileId);
+      if (indexA === -1 || indexB === -1) return indexA >= 0 ? -1 : 1;
+      return indexA - indexB;
+    },
+    [tilesOrder]
+  );
+
   useEffect(() => {
     if (!wrapper.current) return;
     const resizeObserver = new ResizeObserver(() => debounce(debounceTime, handleGridChange));
@@ -34,7 +47,7 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
     return () => {
       resizeObserver.disconnect();
     };
-  }, [handleGridChange, tilesOrder]);
+  }, [handleGridChange]);
 
   useImperativeHandle(
     ref,
@@ -43,15 +56,23 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
         switchOrder: (a, b) => {
           const aIndex = tilesOrder.indexOf(a);
           const bIndex = tilesOrder.indexOf(b);
-          const temp = tilesOrder[aIndex];
-          tilesOrder[aIndex] = tilesOrder[bIndex];
-          tilesOrder[bIndex] = temp;
+          [tilesOrder[aIndex], tilesOrder[bIndex]] = [tilesOrder[bIndex], tilesOrder[aIndex]];
           setTilesOrder([...tilesOrder]);
+          onOrderChange?.(tilesOrder);
         },
+        tiles: initialContext.tiles,
+        boxes: initialContext.boxes,
+        setOrder: (order: Array<TileId>) =>
+          setTilesOrder((v) => {
+            const notInOrder = v.filter((id) => !order.includes(id));
+            return [...order, ...notInOrder];
+          }),
       };
     },
-    [tilesOrder]
+    [tilesOrder, initialContext, onOrderChange]
   );
+
+  useEffect(handleGridChange, [handleGridChange, tilesOrder]);
 
   return (
     <Wrapper
@@ -62,7 +83,7 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
         gridGap: gap !== undefined ? gap + (typeof gap === "number" ? "px" : "") : gap,
       }}
     >
-      <TileManagerContext.Provider value={initialContext}>{childrenArray.sort(({ props: propsA }, { props: propsB }) => tilesOrder.indexOf(propsA.tileId) - tilesOrder.indexOf(propsB.tileId))}</TileManagerContext.Provider>
+      <TileManagerContext.Provider value={initialContext}>{childrenArray.sort(sortFn)}</TileManagerContext.Provider>
     </Wrapper>
   );
 });
