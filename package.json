@@ -1,6 +1,6 @@
 {
   "name": "react-draggable-masonry",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "build/Masonry.js",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
