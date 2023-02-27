@@ -25,7 +25,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "preversion": "npm run build:component",
-    "prepublish": "npm version patch -m \"%s publish\""
+    "prepublish": "npm version patch -m \"%s publish\"",
+    "publish": "git push"
   },
   "eslintConfig": {
     "extends": [
