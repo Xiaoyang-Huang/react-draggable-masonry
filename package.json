@@ -23,7 +23,9 @@
     "build": "react-scripts build",
     "build:component": "tsc --project tsconfig.component.json",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "preversion": "npm run build:component",
+    "prepublishOnly": "npm version patch -m '%s publish'"
   },
   "eslintConfig": {
     "extends": [
