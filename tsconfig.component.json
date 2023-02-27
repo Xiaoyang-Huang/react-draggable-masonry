@@ -1,0 +1,11 @@
+{
+  "extends":"./tsconfig.json",
+  "compilerOptions": {
+    "target":"ESNext",
+    "noEmit": false,
+    "outDir": "build",
+    "declaration": true
+  },
+  "files": ["src/Masonry.ts"],
+  "include": ["src/component", "src/context", "src/helper"]
+}
