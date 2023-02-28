@@ -1,16 +1,9 @@
-import { Children, PropsWithChildren, useEffect, useRef, useCallback, useState, useMemo, forwardRef, useImperativeHandle, ReactElement, RefObject } from "react";
-import styled from "styled-components";
+import { Children, HTMLAttributes, PropsWithChildren, useEffect, useRef, useCallback, useState, useMemo, forwardRef, useImperativeHandle, ReactElement, RefObject } from "react";
 import TileManagerContext, { createDefaultTileManagerContext } from "../context/TileManagerContext";
 import debounce from "../helper/debounce";
 import { Tile, TileId, TileProps } from "./ItemWrapper";
 
-const Wrapper = styled.div`
-  position: relative;
-  display: grid;
-  grid-auto-flow: dense;
-`;
-
-type Props = PropsWithChildren<{ columnWidth?: number; rowHeight?: number; gap?: number; onOrderChange?: (order: Array<TileId>) => void }>;
+type Props = PropsWithChildren<{ columnWidth?: number; rowHeight?: number; gap?: number; onOrderChange?: (order: Array<TileId>) => void }> & HTMLAttributes<HTMLDivElement>;
 export type MasonryRef = {
   switchOrder: (origin: TileId, target: TileId) => void;
   setOrder: (order: Array<TileId>) => void;
@@ -19,7 +12,7 @@ export type MasonryRef = {
 };
 
 const debounceTime = 50;
-const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight, gap, children, onOrderChange }, ref) => {
+const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight, gap, children, onOrderChange, ...rest }, ref) => {
   const wrapper = useRef<HTMLDivElement>();
   const childrenArray = Children.toArray(children) as Array<ReactElement<TileProps>>;
   const [tilesOrder, setTilesOrder] = useState<Array<TileId>>(childrenArray.map(({ props, key }) => props.tileId ?? "fixed-" + key));
@@ -83,7 +76,7 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
           }),
       };
     },
-    [tilesOrder, initialContext, onOrderChange]
+    [tilesOrder, initialContext]
   );
 
   useEffect(() => {
@@ -93,16 +86,21 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
   useEffect(handleGridChange, [handleGridChange, tilesOrder]);
 
   return (
-    <Wrapper
+    <div
+      {...rest}
       ref={(n) => (wrapper.current = n as any)}
       style={{
         gridTemplateColumns: columnWidth !== undefined ? `repeat(auto-fill, ${columnWidth + (typeof columnWidth === "number" ? "px" : "")})` : columnWidth,
         gridAutoRows: rowHeight !== undefined ? rowHeight + (typeof rowHeight === "number" ? "px" : "") : rowHeight,
         gridGap: gap !== undefined ? gap + (typeof gap === "number" ? "px" : "") : gap,
+        position: "relative",
+        display: "grid",
+        gridAutoFlow: "dense",
+        ...rest.style,
       }}
     >
       <TileManagerContext.Provider value={initialContext}>{childrenArray.sort(sortFn)}</TileManagerContext.Provider>
-    </Wrapper>
+    </div>
   );
 });
 

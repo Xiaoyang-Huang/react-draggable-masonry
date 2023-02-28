@@ -1,28 +1,6 @@
 import { PropsWithChildren, useRef, useCallback, useEffect, useContext, HTMLAttributes, useMemo, useState, RefObject } from "react";
-import styled from "styled-components";
 import TileContext, { TileAgent } from "../context/TileContext";
 import TileManagerContext from "../context/TileManagerContext";
-
-const Container = styled.div`
-  position: absolute;
-  box-sizing: border-box;
-`;
-
-const Wrapper = styled.div`
-  display: flex;
-  width: 100%;
-  height: 100%;
-
-  &.placeholder {
-    box-sizing: border-box;
-    border: 3px dashed #00000060;
-    background-color: #00000030;
-
-    ${Container} {
-      z-index: 999999;
-    }
-  }
-`;
 
 export type TileId = number | string;
 export type Tile = {
@@ -83,10 +61,23 @@ export default function ItemWrapper({ tileId, children, colSpan = 1, rowSpan = 1
   }, [tileId, containerRef, boxRef, wrapperRef, setInDrag, updateBounding]);
 
   return (
-    <Wrapper ref={(n) => n && (boxRef.current = n)} className={inDrag ? "placeholder" : ""} style={{ gridColumnEnd: colSpan > 1 ? "span " + colSpan : "auto", gridRowEnd: rowSpan > 1 ? "span " + rowSpan : "auto", ...rest.style }}>
-      <Container ref={(n) => n && (wrapperRef.current = n)} {...rest}>
+    <div
+      ref={(n) => n && (boxRef.current = n)}
+      className={inDrag ? "inDrag" : ""}
+      style={Object.assign(
+        { display: "flex", width: "100%", height: "100%", gridColumnEnd: colSpan > 1 ? "span " + colSpan : "auto", gridRowEnd: rowSpan > 1 ? "span " + rowSpan : "auto" },
+        inDrag
+          ? {
+              boxSizing: "border-box",
+              border: "3px dashed #00000060",
+              backgroundColor: "#00000030",
+            }
+          : (undefined as any)
+      )}
+    >
+      <div ref={(n) => n && (wrapperRef.current = n)} {...rest} style={Object.assign({ position: "absolute", boxSizing: "border-box", ...rest.style }, inDrag ? { zIndex: 999999 } : (undefined as any), rest.style)}>
         <TileContext.Provider value={tileAgent}>{children}</TileContext.Provider>
-      </Container>
-    </Wrapper>
+      </div>
+    </div>
   );
 }

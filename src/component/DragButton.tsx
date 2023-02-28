@@ -1,11 +1,5 @@
 import { PropsWithChildren, HTMLAttributes, useContext, useCallback, PointerEventHandler, PointerEvent as ReactPointEvent } from "react";
-import styled from "styled-components";
 import TileContext from "../context/TileContext";
-
-const Wrapper = styled.div`
-  user-select: none;
-  cursor: all-scroll;
-`;
 
 const elemHasTransition = (elm: HTMLElement) => {
   if ((elm as any).computedStyleMap) return (elm as any).computedStyleMap().getAll("transition")[0].toString() === "all 0s ease 0s";
@@ -107,8 +101,8 @@ export default function DragButton({ children, ...rest }: PropsWithChildren & HT
   );
 
   return (
-    <Wrapper {...rest} onPointerDown={handlePointerDown} onClick={stopPropagation as any}>
+    <div {...rest} style={{ userSelect: "none", cursor: "all-scroll" }} onPointerDown={handlePointerDown} onClick={stopPropagation as any}>
       {children}
-    </Wrapper>
+    </div>
   );
 }
