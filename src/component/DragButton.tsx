@@ -59,7 +59,7 @@ export default function DragButton({ children, ...rest }: PropsWithChildren & HT
       if (!containerRef.current) return;
       const elements = document.elementsFromPoint(mouseX, mouseY);
       const boxes = Object.values(containerRef.current.boxes);
-      const target = elements.find((elem) => elem !== boxRef.current && boxes.includes(elem as HTMLDivElement));
+      const target = elements.filter((elem) => elem.localName === "div" && elem.childElementCount === 1).find((elem) => elem !== boxRef.current && boxes.includes(elem as HTMLDivElement));
       if (target) {
         return Object.values(containerRef.current?.tiles || {}).find((item) => item.isMe(target))?.tileId;
       }
@@ -75,9 +75,8 @@ export default function DragButton({ children, ...rest }: PropsWithChildren & HT
   const handlePointerMove = useCallback(() => {
     return (e: PointerEvent) => {
       stopPropagation(e);
-      // console.log(e.pageX, startX, e.pageY, startY);
       move(e.movementX, e.movementY);
-      const touchedTileId = testTile(e.pageX, e.pageY);
+      const touchedTileId = testTile(e.clientX, e.clientY);
       if (touchedTileId !== undefined) {
         // console.log("switch", tileId, touchedTileId);
         containerRef?.current?.switchOrder(tileId, touchedTileId);
