@@ -9,12 +9,12 @@ export type Tile = {
   updateBounding: () => void;
 };
 
-export type TileProps = { tileId: TileId; colSpan?: number; rowSpan?: number; onGridChange?: (id: TileId) => void };
+export type TileProps = { tileId: TileId; colSpan?: number; rowSpan?: number };
 
 export default function ItemWrapper({ tileId, children, colSpan = 1, rowSpan = 1, ...rest }: PropsWithChildren<TileProps> & HTMLAttributes<HTMLDivElement>) {
   // console.log(`item ${tileId} is re-render`);
   const [inDrag, setInDrag] = useState(false);
-  const { tiles, addTile, containerRef } = useContext(TileManagerContext);
+  const { tiles, addTile } = useContext(TileManagerContext);
   const boxRef = useRef<HTMLDivElement>();
   const wrapperRef = useRef<HTMLDivElement>();
 
@@ -52,13 +52,12 @@ export default function ItemWrapper({ tileId, children, colSpan = 1, rowSpan = 1
   const tileAgent: TileAgent = useMemo(() => {
     return {
       tileId,
-      containerRef,
       boxRef: boxRef as RefObject<HTMLDivElement>,
       wrapperRef: wrapperRef as RefObject<HTMLDivElement>,
       setDragState: setInDrag,
       updateBounding,
     };
-  }, [tileId, containerRef, boxRef, wrapperRef, setInDrag, updateBounding]);
+  }, [tileId, boxRef, wrapperRef, setInDrag, updateBounding]);
 
   return (
     <div
@@ -75,7 +74,7 @@ export default function ItemWrapper({ tileId, children, colSpan = 1, rowSpan = 1
           : (undefined as any)
       )}
     >
-      <div ref={(n) => n && (wrapperRef.current = n)} {...rest} style={Object.assign({ position: "absolute", boxSizing: "border-box", ...rest.style }, inDrag ? { zIndex: 999999 } : (undefined as any), rest.style)}>
+      <div {...rest} ref={(n) => n && (wrapperRef.current = n)} style={Object.assign({ position: "absolute", boxSizing: "border-box", ...rest.style }, inDrag ? { zIndex: 999999 } : (undefined as any), rest.style)}>
         <TileContext.Provider value={tileAgent}>{children}</TileContext.Provider>
       </div>
     </div>

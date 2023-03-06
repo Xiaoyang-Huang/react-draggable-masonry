@@ -1,4 +1,4 @@
-import { Children, HTMLAttributes, PropsWithChildren, useEffect, useRef, useCallback, useState, useMemo, forwardRef, useImperativeHandle, ReactElement, RefObject } from "react";
+import { Children, HTMLAttributes, PropsWithChildren, useEffect, useRef, useCallback, useState, useMemo, forwardRef, useImperativeHandle, ReactElement } from "react";
 import TileManagerContext, { createDefaultTileManagerContext } from "../context/TileManagerContext";
 import debounce from "../helper/debounce";
 import { Tile, TileId, TileProps } from "./ItemWrapper";
@@ -16,7 +16,7 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
   const wrapper = useRef<HTMLDivElement>();
   const childrenArray = Children.toArray(children) as Array<ReactElement<TileProps>>;
   const [tilesOrder, setTilesOrder] = useState<Array<TileId>>(childrenArray.map(({ props, key }) => props.tileId ?? "fixed-" + key));
-  const initialContext = useMemo(() => createDefaultTileManagerContext(ref as RefObject<MasonryRef>), [ref]);
+  const initialContext = useMemo(() => createDefaultTileManagerContext(setTilesOrder), []);
 
   const handleGridChange = useCallback(() => {
     Object.values(initialContext.tiles).forEach((item) => item.updateBounding());
@@ -45,12 +45,7 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
     ref,
     () => {
       return {
-        switchOrder: (a, b) => {
-          const aIndex = tilesOrder.indexOf(a);
-          const bIndex = tilesOrder.indexOf(b);
-          [tilesOrder[aIndex], tilesOrder[bIndex]] = [tilesOrder[bIndex], tilesOrder[aIndex]];
-          setTilesOrder([...tilesOrder]);
-        },
+        switchOrder: initialContext.switchOrder,
         tiles: initialContext.tiles,
         boxes: initialContext.boxes,
         setOrder: (order: Array<TileId>) =>
@@ -76,7 +71,7 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
           }),
       };
     },
-    [tilesOrder, initialContext]
+    [initialContext]
   );
 
   useEffect(() => {

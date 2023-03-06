@@ -75,7 +75,7 @@ function Item({ children, tileId }: PropsWithChildren<{ tileId: TileId }>) {
   );
 }
 
-const tilesTotal = 100;
+const tilesTotal = 10;
 
 export default function Masonry() {
   const masonryRef = useRef<MasonryRef>(null);

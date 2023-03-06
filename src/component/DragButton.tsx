@@ -1,5 +1,6 @@
-import { PropsWithChildren, HTMLAttributes, useContext, useCallback, PointerEventHandler, PointerEvent as ReactPointEvent } from "react";
+import { PropsWithChildren, HTMLAttributes, useContext, useCallback, PointerEventHandler, PointerEvent as ReactPointEvent, MouseEvent as ReactMouseEvent, MouseEventHandler } from "react";
 import TileContext from "../context/TileContext";
+import { TileManagerContext } from "../Masonry";
 
 const elemHasTransition = (elm: HTMLElement) => {
   if ((elm as any).computedStyleMap) return (elm as any).computedStyleMap().getAll("transition")[0].toString() === "all 0s ease 0s";
@@ -7,7 +8,9 @@ const elemHasTransition = (elm: HTMLElement) => {
 };
 
 export default function DragButton({ children, ...rest }: PropsWithChildren & HTMLAttributes<HTMLDivElement>) {
-  const { tileId, containerRef, boxRef, wrapperRef, setDragState, updateBounding } = useContext(TileContext);
+  const { onPointerDown, onClick } = rest;
+  const { boxes, tiles, switchOrder } = useContext(TileManagerContext);
+  const { tileId, boxRef, wrapperRef, setDragState, updateBounding } = useContext(TileContext);
 
   const startDrag = useCallback(() => {
     if (!wrapperRef.current) return;
@@ -56,18 +59,17 @@ export default function DragButton({ children, ...rest }: PropsWithChildren & HT
 
   const testTile = useCallback(
     (mouseX: number, mouseY: number) => {
-      if (!containerRef.current) return;
       const elements = document.elementsFromPoint(mouseX, mouseY);
-      const boxes = Object.values(containerRef.current.boxes);
-      const target = elements.filter((elem) => elem.localName === "div" && elem.childElementCount === 1).find((elem) => elem !== boxRef.current && boxes.includes(elem as HTMLDivElement));
+      const boxesValues = Object.values(boxes);
+      const target = elements.filter((elem) => elem.localName === "div" && elem.childElementCount === 1).find((elem) => elem !== boxRef.current && boxesValues.includes(elem as HTMLDivElement));
       if (target) {
-        return Object.values(containerRef.current?.tiles || {}).find((item) => item.isMe(target))?.tileId;
+        return Object.values(tiles || {}).find((item) => item.isMe(target))?.tileId;
       }
     },
-    [boxRef, containerRef]
+    [boxRef, boxes, tiles]
   );
 
-  const stopPropagation = (e: ReactPointEvent<HTMLDivElement> | PointerEvent) => {
+  const stopPropagation = (e: ReactPointEvent<HTMLDivElement> | ReactMouseEvent<HTMLDivElement> | PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
   };
@@ -79,13 +81,14 @@ export default function DragButton({ children, ...rest }: PropsWithChildren & HT
       const touchedTileId = testTile(e.clientX, e.clientY);
       if (touchedTileId !== undefined) {
         // console.log("switch", tileId, touchedTileId);
-        containerRef?.current?.switchOrder(tileId, touchedTileId);
+        switchOrder(tileId, touchedTileId);
       }
     };
-  }, [containerRef, move, testTile, tileId]);
+  }, [switchOrder, move, testTile, tileId]);
 
   const handlePointerDown: PointerEventHandler<HTMLDivElement> = useCallback(
     (e) => {
+      onPointerDown?.(e);
       if (!boxRef.current || !wrapperRef.current) return;
       startDrag();
       const moveHandler = handlePointerMove();
@@ -96,11 +99,19 @@ export default function DragButton({ children, ...rest }: PropsWithChildren & HT
         window.removeEventListener("pointermove", moveHandler);
       });
     },
-    [handlePointerMove, boxRef, endDrag, startDrag, wrapperRef]
+    [handlePointerMove, boxRef, endDrag, startDrag, wrapperRef, onPointerDown]
+  );
+
+  const handleClick: MouseEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      stopPropagation(e);
+      onClick?.(e);
+    },
+    [onClick]
   );
 
   return (
-    <div {...rest} style={{ userSelect: "none", cursor: "all-scroll" }} onPointerDown={handlePointerDown} onClick={stopPropagation as any}>
+    <div {...rest} style={{ userSelect: "none", cursor: "all-scroll", ...rest.style }} onPointerDown={handlePointerDown} onClick={handleClick}>
       {children}
     </div>
   );
