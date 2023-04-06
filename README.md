@@ -1,6 +1,6 @@
 # React-Draggable-Masonry
 
-An open source library to provider a draggable masonry layout for your react projects
+An open source library to provider a draggable masonry layout for your react projects, the layout is implmented by CSS and the lib is lightweight, only dependent on react.
 
 # Demo
 
