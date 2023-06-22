@@ -14,13 +14,23 @@ export function createDefaultTileManagerContext(setOrderHandle: (ordersDispatche
         cachedOrder = tilesOrder;
         const aIndex = tilesOrder.indexOf(a);
         const bIndex = tilesOrder.indexOf(b);
+        // console.log(a, aIndex, b, bIndex);
+        if (aIndex === -1 || bIndex === -1) return tilesOrder;
         [tilesOrder[aIndex], tilesOrder[bIndex]] = [tilesOrder[bIndex], tilesOrder[aIndex]];
         return [...tilesOrder];
       });
     },
     addTile: (item: Tile, box: HTMLDivElement) => {
-      tiles[item.tileId] = item;
-      boxes[item.tileId] = box;
+      const { tileId } = item;
+      tiles[tileId] = item;
+      boxes[tileId] = box;
+      let cachedOrder: Array<TileId>;
+      setOrderHandle((tilesOrder) => {
+        if (cachedOrder === tilesOrder) return cachedOrder; // get rid of react strict mode
+        if (tilesOrder.indexOf(tileId) > -1) return tilesOrder;
+        cachedOrder = tilesOrder;
+        return [...tilesOrder, tileId];
+      });
     },
   };
 

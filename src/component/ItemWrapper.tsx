@@ -17,6 +17,8 @@ export default function ItemWrapper({ tileId, children, colSpan = 1, rowSpan = 1
   const { tiles, addTile } = useContext(TileManagerContext);
   const boxRef = useRef<HTMLDivElement>();
   const wrapperRef = useRef<HTMLDivElement>();
+  const containerRef = useRef<HTMLDivElement>();
+  const memoChild = useMemo(() => children, [children]);
 
   const isMe = useCallback((testElem: Element) => boxRef.current === testElem, []);
 
@@ -54,6 +56,7 @@ export default function ItemWrapper({ tileId, children, colSpan = 1, rowSpan = 1
       tileId,
       boxRef: boxRef as RefObject<HTMLDivElement>,
       wrapperRef: wrapperRef as RefObject<HTMLDivElement>,
+      containerRef: containerRef as RefObject<HTMLDivElement>,
       setDragState: setInDrag,
       updateBounding,
     };
@@ -61,7 +64,12 @@ export default function ItemWrapper({ tileId, children, colSpan = 1, rowSpan = 1
 
   return (
     <div
-      ref={(n) => n && (boxRef.current = n)}
+      ref={(n) => {
+        if (n) {
+          boxRef.current = n;
+          containerRef.current = n.parentNode as HTMLDivElement;
+        }
+      }}
       className={inDrag ? "inDrag" : ""}
       style={Object.assign(
         { display: "flex", width: "100%", height: "100%", gridColumnEnd: colSpan > 1 ? "span " + colSpan : "auto", gridRowEnd: rowSpan > 1 ? "span " + rowSpan : "auto" },
@@ -74,8 +82,12 @@ export default function ItemWrapper({ tileId, children, colSpan = 1, rowSpan = 1
           : (undefined as any)
       )}
     >
-      <div {...rest} ref={(n) => n && (wrapperRef.current = n)} style={Object.assign({ position: "absolute", boxSizing: "border-box", ...rest.style }, inDrag ? { zIndex: 999999 } : (undefined as any), rest.style)}>
-        <TileContext.Provider value={tileAgent}>{children}</TileContext.Provider>
+      <div
+        {...rest}
+        ref={(n) => n && (wrapperRef.current = n)}
+        style={Object.assign({ position: "absolute", boxSizing: "border-box", ...rest.style }, inDrag ? { zIndex: 999999 } : (undefined as any), rest.style)}
+      >
+        <TileContext.Provider value={tileAgent}>{memoChild}</TileContext.Provider>
       </div>
     </div>
   );

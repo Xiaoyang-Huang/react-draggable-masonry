@@ -5,6 +5,7 @@ export type TileAgent = {
   tileId: TileId;
   boxRef: RefObject<HTMLDivElement>;
   wrapperRef: RefObject<HTMLDivElement>;
+  containerRef: RefObject<HTMLDivElement>;
   setDragState: (inDrag: boolean) => void;
   updateBounding: () => void;
 };
@@ -12,6 +13,7 @@ export default createContext<TileAgent>({
   tileId: "mock",
   boxRef: {} as any,
   wrapperRef: {} as any,
+  containerRef: {} as any,
   setDragState: () => void 0,
   updateBounding: () => void 0,
 });

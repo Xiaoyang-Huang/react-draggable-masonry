@@ -1,6 +1,7 @@
 import { PropsWithChildren, HTMLAttributes, useContext, useCallback, PointerEventHandler, PointerEvent as ReactPointEvent, MouseEvent as ReactMouseEvent, MouseEventHandler } from "react";
 import TileContext from "../context/TileContext";
 import { TileManagerContext } from "../Masonry";
+import { ConfigContext } from "../context/ConfigContext";
 
 const elemHasTransition = (elm: HTMLElement) => {
   if ((elm as any).computedStyleMap) return (elm as any).computedStyleMap().getAll("transition")[0].toString() === "all 0s ease 0s";
@@ -9,8 +10,9 @@ const elemHasTransition = (elm: HTMLElement) => {
 
 export default function DragButton({ children, ...rest }: PropsWithChildren & HTMLAttributes<HTMLDivElement>) {
   const { onPointerDown, onClick } = rest;
+  const { bounded } = useContext(ConfigContext);
   const { boxes, tiles, switchOrder } = useContext(TileManagerContext);
-  const { tileId, boxRef, wrapperRef, setDragState, updateBounding } = useContext(TileContext);
+  const { tileId, boxRef, wrapperRef, containerRef, setDragState, updateBounding } = useContext(TileContext);
 
   const startDrag = useCallback(() => {
     if (!wrapperRef.current) return;
@@ -25,7 +27,7 @@ export default function DragButton({ children, ...rest }: PropsWithChildren & HT
       const isTransitioned = elemHasTransition(wrapperRef.current);
       const handleTransitionEnd = () => {
         setDragState(false);
-        isTransitioned && wrapperRef.current?.removeEventListener("transitionend", handleTransitionEnd);
+        wrapperRef.current?.removeEventListener("transitionend", handleTransitionEnd);
       };
       if (isTransitioned) {
         handleTransitionEnd();
@@ -40,21 +42,29 @@ export default function DragButton({ children, ...rest }: PropsWithChildren & HT
 
   const move = useCallback(
     (moveX: number, moveY: number) => {
-      if (!boxRef.current || !wrapperRef.current) return;
-      const parentRect = (boxRef.current.parentNode as HTMLElement)?.getBoundingClientRect();
-      if (!parentRect) return;
+      if (!containerRef.current || !wrapperRef.current) return;
+      const parentRect = containerRef.current.getBoundingClientRect();
       const containerRect = wrapperRef.current.getBoundingClientRect();
+      const left = parseInt(wrapperRef.current.style.left) || 0;
+      const top = parseInt(wrapperRef.current.style.top) || 0;
+      let targetX = left;
+      let targetY = top;
 
-      let targetX = Math.max(parseInt(wrapperRef.current.style.left) + moveX, 0);
-      if (targetX + containerRect.width > parentRect.left + parentRect.width) targetX = parentRect.left + parentRect.width - containerRect.width;
+      if (bounded) {
+        targetX = Math.max(left + moveX, 0);
+        if (targetX + containerRect.width > parentRect.width) targetX = parentRect.width - containerRect.width;
 
-      let targetY = Math.max(parseInt(wrapperRef.current.style.top) + moveY, 0);
-      if (targetY + containerRect.height > parentRect.height) targetY = parentRect.height - containerRect.height;
+        targetY = Math.max(top + moveY, 0);
+        if (targetY + containerRect.height > parentRect.height) targetY = parentRect.height - containerRect.height;
+      } else {
+        targetX += moveX;
+        targetY += moveY;
+      }
 
       wrapperRef.current.style.left = targetX + "px";
       wrapperRef.current.style.top = targetY + "px";
     },
-    [boxRef, wrapperRef]
+    [containerRef, wrapperRef, bounded]
   );
 
   const testTile = useCallback(

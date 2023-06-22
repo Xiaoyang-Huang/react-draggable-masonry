@@ -2,8 +2,9 @@ import { Children, HTMLAttributes, PropsWithChildren, useEffect, useRef, useCall
 import TileManagerContext, { createDefaultTileManagerContext } from "../context/TileManagerContext";
 import debounce from "../helper/debounce";
 import { Tile, TileId, TileProps } from "./ItemWrapper";
+import { Config, ConfigContext } from "../context/ConfigContext";
 
-type Props = PropsWithChildren<{ columnWidth?: number; rowHeight?: number; gap?: number; onOrderChange?: (order: Array<TileId>) => void }> & HTMLAttributes<HTMLDivElement>;
+type Props = PropsWithChildren<{ columnWidth?: number; rowHeight?: number; gap?: number; onOrderChange?: (order: Array<TileId>) => void } & Partial<Config>> & HTMLAttributes<HTMLDivElement>;
 export type MasonryRef = {
   switchOrder: (origin: TileId, target: TileId) => void;
   setOrder: (order: Array<TileId>) => void;
@@ -12,20 +13,26 @@ export type MasonryRef = {
 };
 
 const debounceTime = 50;
-const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight, gap, children, onOrderChange, ...rest }, ref) => {
+const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight, gap, children, onOrderChange, bounded = false, ...rest }, ref) => {
   const wrapper = useRef<HTMLDivElement>();
   const childrenArray = Children.toArray(children) as Array<ReactElement<TileProps>>;
   const [tilesOrder, setTilesOrder] = useState<Array<TileId>>(childrenArray.map(({ props, key }) => props.tileId ?? "fixed-" + key));
   const initialContext = useMemo(() => createDefaultTileManagerContext(setTilesOrder), []);
+  const configContext = useMemo(
+    () => ({
+      bounded,
+    }),
+    [bounded]
+  );
 
   const handleGridChange = useCallback(() => {
     Object.values(initialContext.tiles).forEach((item) => item.updateBounding());
   }, [initialContext]);
 
   const sortFn = useCallback(
-    ({ props: propsA, key: keyA }: ReactElement<TileProps>, { props: propsB, key: keyB }: ReactElement<TileProps>) => {
-      const indexA = tilesOrder.indexOf(propsA.tileId ?? "fixed-" + keyA);
-      const indexB = tilesOrder.indexOf(propsB.tileId ?? "fixed-" + keyB);
+    ({ props: { tileId: tileIdA }, key: keyA }: ReactElement<TileProps>, { props: { tileId: tileIdB }, key: keyB }: ReactElement<TileProps>) => {
+      const indexA = tilesOrder.indexOf(tileIdA ?? "fixed-" + keyA);
+      const indexB = tilesOrder.indexOf(tileIdB ?? "fixed-" + keyB);
       if (indexA === -1 || indexB === -1) return indexA >= 0 ? -1 : 1;
       return indexA - indexB;
     },
@@ -56,16 +63,14 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
                 "detected duplicate items in order, will only keep first index for these items",
                 order.filter((item, index) => order.indexOf(item) !== index)
               );
-            const notInOrder = v.filter((id) => !targetOrder.includes(id));
             const idExisting = targetOrder.filter((id) => v.includes(id));
             if (idExisting.length !== targetOrder.length)
               console.warn(
                 "detected tile id is not in children list",
                 targetOrder.filter((id) => !v.includes(id))
               );
-            const result = [...idExisting, ...notInOrder];
-            if (result.find((item, index) => v[index] !== item)) {
-              return result;
+            if (idExisting.find((item, index) => v[index] !== item)) {
+              return [...idExisting];
             }
             return v;
           }),
@@ -78,7 +83,7 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
     onOrderChange?.(tilesOrder);
   }, [tilesOrder, onOrderChange]);
 
-  useEffect(handleGridChange, [handleGridChange, tilesOrder]);
+  useEffect(handleGridChange, [handleGridChange, tilesOrder, childrenArray]);
 
   return (
     <div
@@ -94,7 +99,9 @@ const ContainerWrapper = forwardRef<MasonryRef, Props>(({ columnWidth, rowHeight
         ...rest.style,
       }}
     >
-      <TileManagerContext.Provider value={initialContext}>{childrenArray.sort(sortFn)}</TileManagerContext.Provider>
+      <ConfigContext.Provider value={configContext}>
+        <TileManagerContext.Provider value={initialContext}>{childrenArray.sort(sortFn)}</TileManagerContext.Provider>
+      </ConfigContext.Provider>
     </div>
   );
 });
