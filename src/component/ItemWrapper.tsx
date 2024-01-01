@@ -85,7 +85,7 @@ export default function ItemWrapper({ tileId, children, colSpan = 1, rowSpan = 1
       <div
         {...rest}
         ref={(n) => n && (wrapperRef.current = n)}
-        style={Object.assign({ position: "absolute", boxSizing: "border-box", ...rest.style }, inDrag ? { zIndex: 999999 } : (undefined as any), rest.style)}
+        style={Object.assign({ position: "absolute", boxSizing: "border-box", width: "100%", height: "100%" }, rest.style, inDrag ? { zIndex: 999999 } : (undefined as any))}
       >
         <TileContext.Provider value={tileAgent}>{memoChild}</TileContext.Provider>
       </div>
