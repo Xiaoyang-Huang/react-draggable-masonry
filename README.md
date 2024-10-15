@@ -4,7 +4,7 @@ An open source library to provider a draggable masonry layout for your react pro
 
 # Demo
 
-![demo](public/demo.gif)
+[Check here](https://xiaoyang-huang.github.io/react-draggable-masonry/)
 
 # Install
 
@@ -14,64 +14,40 @@ npm install --save react-draggable-masonry
 
 # Usage
 
-```javascript
-import { ContainerWrapper, DragButton, ItemWrapper } from "react-draggable-masonry";
-
-const size = 100;
-const tilesTotal = 100;
-
-export default function App() {
-  return (
-    <ContainerWrapper gap={10} columnWidth={size} rowHeight={size}>
-      {new Array(tilesTotal).fill("test").map((item, i) =>
-        i % 2 === 0 ? (
-          <ItemWrapper key={i} tileId={i}>
-            <DragButton>Drag</DragButton> {/* put a drag button to enable drag function */}
-            {i}
-          </ItemWrapper>
-        ) : (
-          <div key={i}>{i}</div> /* fixed items, these item will not able to interact with your mouse. */
-        )
-      )}
-    </ContainerWrapper>
-  );
-}
-```
-
-you may need style to make masonry visiable, check the App.tsx in github
+Check the file under [demo folder](src/demo)
 
 # API
 
-## ContainerWrapper
+## Wall
 
-Inherit all props from HTMLDIVElement and also have following props additional:
-| Prop | Type | Description
-|:----: |:----: |------------
-|gap |number | the gap between grid tiles
-|columnWidth |number | grid tile's width
-|rowHeight |number | grid tile's height
-|onOrderChange|function | event handler for tile's order change: (order: Array<number \| string>) => void
+|       Prop       |           Type           | Description                                                                                                                       |
+| :--------------: | :----------------------: | --------------------------------------------------------------------------------------------------------------------------------- |
+|   columnWidth    |     number \| string     | width of a brick                                                                                                                  |
+|    rowHeight     |     number \| string     | height of a brick                                                                                                                 |
+|       gap        |     number \| string     | space between brick                                                                                                               |
+| allowDragInSpace |         boolean          | allow brick to drag into this wall                                                                                                |
+|     dragMode     |   "normal" \| "adapt"    | the way to manage the brick size while drag and drop:<br/>normal: keep the source size<br/>adapt: resize to target size           |
+|     swapMode     | "internal" \| "external" | the way to manage the bricker order:<br/>internal: swap bricks with DOM operation<br/>external: leave the DOM management to React |
+|     children     |        reactNode         | any react component                                                                                                               |
 
-it can be add a ref props and the ref give you access for original tiles and boxes:
+## Concrete
 
-```typescript
-{
-  switchOrder: (origin: TileId, target: TileId) => void;
-  setOrder: (order: Array<TileId>) => void;
-  tiles: { [key: string]: Tile };
-  boxes: { [key: string]: HTMLDivElement };
-}
-```
+usually you don't need to use this component
 
-### ItemWrapper
+|   Prop   |  Type  | Description                      |
+| :------: | :----: | -------------------------------- |
+|    id    | string | unique id for the brick children |
+|  index   | number | bricker order index in wall      |
+| children | Brick  | Bricker component                |
 
-It provide default style and function for tile to make it adapt for flex grid (but a tile also can be put into container with out ItemWrapper, it will treat as a fixed item)
-| Prop | Type | Description
-|:----: |:----: |------------
-|tileId |number or string | mandatory field
-|colSpan |number | occupied columns for tile
-|rowSpan |number | occupied rows for tile
+## Brick
 
-### DragButton
+Inherit all props from HTMLDIVElement and also have following props additional
 
-Provide drag & drop function to a wrapped tile
+|    Prop     |   Type    | Description                                                                                                                        |
+| :---------: | :-------: | ---------------------------------------------------------------------------------------------------------------------------------- |
+|  draggable  |  boolean  | enable/disable drag function on brick                                                                                              |
+|    width    |  number   | how many cells in row will filled by this brick                                                                                    |
+|   height    |  number   | how many cells in columns will filled by this brick                                                                                |
+| allowToSwap |  boolean  | set to false if you want a fixed brick, otherwise if a draggable birck move on this brick, it will swap the position with that one |
+|  children   | reactNode | any react component                                                                                                                |
