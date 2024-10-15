@@ -25,6 +25,7 @@
     "react": ">=16.8",
     "react-dom": ">=16.8"
   },
+  "homepage": ".",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
