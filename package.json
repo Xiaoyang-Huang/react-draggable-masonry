@@ -1,6 +1,6 @@
 {
   "name": "react-draggable-masonry",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "dist/Masonry.js",
   "types": "dist/Masonry.d.ts",
   "devDependencies": {
