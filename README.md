@@ -55,4 +55,4 @@ Inherit all props from HTMLDIVElement and also have following props additional
 # Mobile Support
 
 Tested with [drag-drop-touch](https://www.npmjs.com/package/drag-drop-touch) and it able to work with mobile devices.
-check our [demo code](src\index.tsx#5), you need install the package and import that to enable the mobile support.
+check our [demo code](src/index.tsx#L5), you need install the package and import that to enable the mobile support.
