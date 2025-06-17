@@ -2,8 +2,9 @@
   "extends":"./tsconfig.json",
   "compilerOptions": {
     "target":"ESNext",
+    "module": "commonjs",
     "noEmit": false,
-    "outDir": "build",
+    "outDir": "dist",
     "declaration": true
   },
   "files": ["src/Masonry.ts"],

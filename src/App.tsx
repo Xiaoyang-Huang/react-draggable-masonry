@@ -1,6 +1,6 @@
 import Basic from "./demo/Basic";
 import ExternalSwapMode from "./demo/ExternalSwapMode";
-import Demo from "./demo/Demo";
+import StyledBrick from "./demo/StyledBrick";
 import DragBrickCrossWall from "./demo/DragBrickCrossWall";
 import { createElement, useState } from "react";
 import styled from "styled-components";
@@ -9,7 +9,7 @@ import styled from "styled-components";
 const demoes = {
   Basic,
   ExternalSwapMode,
-  Demo,
+  StyledBrick,
   DragBrickCrossWall,
 };
 
@@ -19,11 +19,11 @@ const DemoButton = styled.button<{ active: boolean }>`
 `;
 
 export default function Masonry() {
-  const [currentDemo, setCurrentDemo] = useState("Demo");
+  const [currentDemo, setCurrentDemo] = useState("StyledBrick");
   return (
     <div>
       <h1>
-        Demoes:{" "}
+        Demoes:
         {Object.keys(demoes).map((key) => (
           <DemoButton active={key === currentDemo} onClick={() => setCurrentDemo(key)} key={key}>
             {key}

@@ -1,8 +1,8 @@
 {
   "name": "react-draggable-masonry",
   "version": "1.0.1",
-  "main": "build/Masonry.js",
-  "types": "build/Masonry.d.ts",
+  "main": "dist/Masonry.js",
+  "types": "dist/Masonry.d.ts",
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@testing-library/jest-dom": "^5.17.0",
@@ -43,7 +43,7 @@
     ]
   },
   "files": [
-    "/build/**/*"
+    "/dist/**/*"
   ],
   "author": "Xiaoyang Huang",
   "license": "MIT",
