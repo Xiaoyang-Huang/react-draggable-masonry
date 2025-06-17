@@ -14,7 +14,7 @@ npm install --save react-draggable-masonry
 
 # Usage
 
-Check the file under [demo folder](src/demo)
+Check the examples in [demo folder](src/demo)
 
 # API
 
@@ -51,3 +51,8 @@ Inherit all props from HTMLDIVElement and also have following props additional
 |   height    |  number   | how many cells in columns will filled by this brick                                                                                |
 | allowToSwap |  boolean  | set to false if you want a fixed brick, otherwise if a draggable birck move on this brick, it will swap the position with that one |
 |  children   | reactNode | any react component                                                                                                                |
+
+# Mobile Support
+
+Tested with [drag-drop-touch](https://www.npmjs.com/package/drag-drop-touch) and it able to work with mobile devices.
+check our [demo code](src\index.tsx#5), you need install the package and import that to enable the mobile support.
