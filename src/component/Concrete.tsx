@@ -9,11 +9,13 @@ export default function Concrete({ children, index, id }: PropsWithChildren<{ in
   const brickData = useMemo(() => wallData.getOrCreateBrick({ id }), [id, wallData]);
 
   useEffect(() => {
+    if(wallData.isContainBrick(brickData)) return;
     wallData.addBrick(brickData, index);
     return () => {
+      if(index !== wallData.getBrickIndex(brickData)) return;
       wallData.removeBrick(brickData);
     };
-  }, [wallData, brickData]);
+  }, [index, wallData, brickData]);
 
   useEffect(() => {
     const { container } = brickData;
