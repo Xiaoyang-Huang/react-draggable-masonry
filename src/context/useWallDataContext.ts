@@ -51,8 +51,12 @@ export class WallData extends (EventEmitter as new () => TypedEmitter<{
     return this._bricks.includes(brickData);
   }
 
+  public getBrickIndex(brickData: BrickData) {
+    return this._bricks.findIndex((b) => b === brickData);
+  }
+
   public addBrick(brickData: BrickData, index?: number) {
-    const existingIndex = this._bricks.findIndex((b) => b === brickData);
+    const existingIndex = this.getBrickIndex(brickData);
     if (existingIndex === -1) {
       if (index !== undefined) {
         brickData.orderInWall = index;
@@ -69,7 +73,7 @@ export class WallData extends (EventEmitter as new () => TypedEmitter<{
   }
 
   public removeBrick(brickData: BrickData) {
-    const existingIndex = this._bricks.findIndex((b) => b === brickData);
+    const existingIndex = this.getBrickIndex(brickData);
     if (existingIndex > -1) {
       this._bricks.splice(existingIndex, 1);
     }

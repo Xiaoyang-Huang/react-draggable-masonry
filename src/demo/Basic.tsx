@@ -10,7 +10,7 @@ export default function Basic() {
   const [size, setSize] = useState(4);
   return (
     <div>
-      <Wall columnWidth={200} rowHeight={200} onBrickChange={(bricks) => console.log(bricks.map((i) => i.config.id))}>
+      <Wall columnWidth={300} rowHeight={300} onBrickChange={(bricks) => console.log(bricks.map((i) => i.config.id))}>
         Fixed content A
         {new Array(size).fill(1).map((never, index) => {
           const label = "brick " + index;
@@ -26,7 +26,7 @@ export default function Basic() {
         })}
         Fixed content B
         <DragableBrick key={"aaa"} label={"aaa"} />
-        <PrintRender />
+        <PrintRender key="print" />
         <DragableBrick key={"bbb"} label={"bbb"} />
       </Wall>
       <button onClick={() => setSize((v) => ++v)}>Add</button>

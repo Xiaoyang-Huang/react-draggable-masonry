@@ -9,7 +9,7 @@ export default function Concrete({ children, index, id }: PropsWithChildren<{ in
   const brickData = useMemo(() => wallData.getOrCreateBrick({ id }), [id, wallData]);
 
   useEffect(() => {
-    wallData.addBrick(brickData);
+    wallData.addBrick(brickData, index);
     return () => {
       wallData.removeBrick(brickData);
     };
@@ -46,8 +46,11 @@ export default function Concrete({ children, index, id }: PropsWithChildren<{ in
     return () => {
       container.removeEventListener("dragenter", handlerDragEnter);
       container.removeEventListener("dragover", handleDragOver);
-      if (mountPoint.contains(container)) {
-        mountPoint.removeChild(container);
+      if(mountPoint.contains(container)){
+        // console.log(!wallData.isContainBrick(brickData) || wallData.getBrickIndex(brickData) !== index, brickData, index, id, wallData.getBrickIndex(brickData));
+        if(!wallData.isContainBrick(brickData) || wallData.getBrickIndex(brickData) !== index){
+          mountPoint.removeChild(container);
+        }
       }
     };
   }, [index, brickData, wallData]);

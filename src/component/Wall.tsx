@@ -92,7 +92,10 @@ export default function Wall({
     <div
       className="wall-wrap"
       ref={(n) => {
-        n?.appendChild(wallData.container);
+        if(!n) return;
+        if (n.contains(wallData.container)) return;
+        n.innerHTML = "";
+        n.appendChild(wallData.container);
       }}
     >
       <DataContext.Provider value={wallData}>
