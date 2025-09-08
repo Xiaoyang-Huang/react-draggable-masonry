@@ -21,7 +21,6 @@ export default function Concrete({ children, index, id }: PropsWithChildren<{ in
 
   useEffect(() => {
     const { container } = brickData;
-    const { container: mountPoint } = wallData;
     const handlerDragEnter = (e: DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
@@ -41,21 +40,9 @@ export default function Concrete({ children, index, id }: PropsWithChildren<{ in
 
     container.addEventListener("dragenter", handlerDragEnter);
     container.addEventListener("dragover", handleDragOver);
-    if (!mountPoint.contains(container)) {
-      if (mountPoint.childNodes.length <= index) mountPoint.appendChild(container);
-      else {
-        mountPoint.insertBefore(container, mountPoint.childNodes[index]);
-      }
-    }
     return () => {
       container.removeEventListener("dragenter", handlerDragEnter);
       container.removeEventListener("dragover", handleDragOver);
-      if(mountPoint.contains(container)){
-        // console.log(!wallData.isContainBrick(brickData) || wallData.getBrickIndex(brickData) !== index, brickData, index, id, wallData.getBrickIndex(brickData));
-        if(!wallData.isContainBrick(brickData) || wallData.getBrickIndex(brickData) !== index){
-          mountPoint.removeChild(container);
-        }
-      }
     };
   }, [index, brickData, wallData]);
 

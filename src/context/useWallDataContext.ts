@@ -61,11 +61,14 @@ export class WallData extends (EventEmitter as new () => TypedEmitter<{
       if (index !== undefined) {
         brickData.orderInWall = index;
         this._bricks.splice(index, 0, brickData);
+        this.container.insertBefore(brickData.container, this.container.childNodes[index]);
       } else if (brickData.orderInWall !== -1) {
         this._bricks.splice(brickData.orderInWall, 0, brickData);
+        this.container.insertBefore(brickData.container, this.container.childNodes[brickData.orderInWall]);
       } else {
         brickData.orderInWall = this._bricks.length;
         this._bricks.push(brickData);
+        this.container.appendChild(brickData.container);
       }
       brickData.wall = this;
     }
@@ -74,9 +77,8 @@ export class WallData extends (EventEmitter as new () => TypedEmitter<{
 
   public removeBrick(brickData: BrickData) {
     const existingIndex = this.getBrickIndex(brickData);
-    if (existingIndex > -1) {
-      this._bricks.splice(existingIndex, 1);
-    }
+    if (existingIndex > -1) this._bricks.splice(existingIndex, 1);
+    if (this.container.contains(brickData.container)) this.container.removeChild(brickData.container);
     return existingIndex;
   }
 
@@ -114,6 +116,8 @@ export class WallData extends (EventEmitter as new () => TypedEmitter<{
         if (b === targetBrick) targetBrickIndex = i;
       });
       [this._bricks[inDragBrickIndex], this._bricks[targetBrickIndex]] = [this._bricks[targetBrickIndex], this._bricks[inDragBrickIndex]];
+      inDragBrick.orderInWall = targetBrickIndex;
+      targetBrick.orderInWall = inDragBrickIndex;
 
       if (this.config.swapMode === "internal") {
         const siblingA = inDragBrick.container.nextSibling === targetBrick.container ? inDragBrick.container : inDragBrick.container.nextSibling;

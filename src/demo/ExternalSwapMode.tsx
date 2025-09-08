@@ -3,14 +3,17 @@ import ResizeableBrick from "./component/ResizeableBrick";
 import DragableBrick from "./component/DragableBrick";
 import StateBrick from "./component/StateBrick";
 import { Wall } from "../Masonry";
+import PrintRender from "./component/PrintRender";
 
 const getNode = (label: string, index: number) => {
   switch (true) {
-    case index % 3 === 1:
+    case index % 4=== 1:
       return <StateBrick key={label} label={label} />;
-    case index % 3 === 2:
+    case index % 4=== 2:
       return <ResizeableBrick key={label} label={label} />;
-    case index % 3 === 0:
+    case index % 4=== 3:
+      return <PrintRender key={label} />
+    case index % 4=== 0:
     default:
       return <DragableBrick key={label} label={label} />;
   }

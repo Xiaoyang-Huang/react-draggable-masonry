@@ -16,7 +16,7 @@ const getNode = (label: string, index: number) => {
   }
 };
 
-const bricks = new Array(14).fill(1).map((never, index) => {
+const bricks = new Array(20).fill(1).map((never, index) => {
   const label = "brick " + index;
   return { key: label, node: getNode(label, index) };
 });

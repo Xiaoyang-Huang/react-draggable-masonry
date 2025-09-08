@@ -12,6 +12,9 @@ const Brick = forwardRef<HTMLDivElement, PropsWithChildren<Partial<BrickConfig> 
 
     useEffect(() => {
       brickData.config.allowToSwap = allowToSwap ?? true;
+      return () => {
+        brickData.wall?.removeBrick(brickData);
+      }
     }, [brickData, allowToSwap]);
 
     useEffect(() => {
